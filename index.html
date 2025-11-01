@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Seed Validator - Verify Your Seed Phrase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        .main-content {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .supported-tokens {
+            margin-bottom: 40px;
+        }
+
+        .supported-tokens h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tokens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .token-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .token-card:hover {
+            border-color: rgba(251, 191, 36, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.1);
+        }
+
+        .token-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .token-name {
+            font-weight: 600;
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+
+        .token-status {
+            font-size: 0.75rem;
+            color: #22c55e;
+            margin-top: 5px;
+        }
+
+        .validator-section {
+            margin-top: 40px;
+        }
+
+        .validator-section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        .seed-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+        }
+
+        .validate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            border: none;
+            border-radius: 12px;
+            color: #0f172a;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .validate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .validate-btn:active {
+            transform: translateY(0);
+        }
+
+        .warning-banner {
+            display: none;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            animation: slideDown 0.5s ease;
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+        }
+
+        .warning-banner.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .warning-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .warning-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .warning-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+        .warning-content ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        .warning-content li {
+            margin: 10px 0;
+        }
+
+        .security-tips {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            border-left: 4px solid #fbbf24;
+        }
+
+        .security-tips h3 {
+            color: #fbbf24;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .security-tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .security-tips li {
+            margin: 10px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .security-tips li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 25px;
+            }
+
+            .tokens-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+
+            .seed-input {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🔐 Seed Validator</div>
+            <div class="tagline">Verify your cryptocurrency seed phrases across multiple blockchains</div>
+        </header>
+
+        <div class="main-content">
+            <div class="supported-tokens">
+                <h2>🪙 Supported Cryptocurrencies</h2>
+                <div class="tokens-grid">
+                    <div class="token-card">
+                        <div class="token-icon">₿</div>
+                        <div class="token-name">Bitcoin</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                    <div class="token-card">
+                        <div class="token-icon">◎</div>
+                        <div class="token-name">Solana</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                    <div class="token-card">
+                        <div class="token-icon">Ξ</div>
+                        <div class="token-name">Ethereum</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                    <div class="token-card">
+                        <div class="token-icon">◈</div>
+                        <div class="token-name">Polygon</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                    <div class="token-card">
+                        <div class="token-icon">●</div>
+                        <div class="token-name">Avalanche</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                    <div class="token-card">
+                        <div class="token-icon">◆</div>
+                        <div class="token-name">Cardano</div>
+                        <div class="token-status">✓ Supported</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="validator-section">
+                <h2>🔍 Validate Your Seed Phrase</h2>
+                <div class="input-group">
+                    <label class="input-label" for="seed-input">Enter your seed phrase (12 or 24 words):</label>
+                    <textarea 
+                        id="seed-input" 
+                        class="seed-input" 
+                        placeholder="Enter your seed phrase here..."
+                        rows="4"
+                    ></textarea>
+                </div>
+                <button class="validate-btn" id="validate-btn">Validate Seed Phrase</button>
+
+                <div class="warning-banner" id="warning-banner">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-title">NEVER SHARE YOUR SEED PHRASE!</div>
+                    <div class="warning-content">
+                        <p><strong>Your seed phrase is the master key to your cryptocurrency wallet.</strong></p>
+                        <p>If you were about to enter your seed phrase here, please stop immediately. This website is an educational tool designed to protect you.</p>
+                        
+                        <p><strong>Important Security Facts:</strong></p>
+                        <ul>
+                            <li><strong>Never share your seed phrase with anyone</strong> - No legitimate service will ever ask for it</li>
+                            <li><strong>Never enter it online</strong> - Websites claiming to "validate" or "verify" seeds are scams</li>
+                            <li><strong>Store it securely offline</strong> - Write it down and keep it in a safe place</li>
+                            <li><strong>Beware of phishing</strong> - Scammers create fake validation tools to steal your funds</li>
+                        </ul>
+
+                        <p><strong>If you entered your seed phrase:</strong></p>
+                        <ul>
+                            <li>Your input was never saved or transmitted - it was cleared immediately</li>
+                            <li>Move your funds to a new wallet with a fresh seed phrase</li>
+                            <li>Consider your original seed phrase compromised if you've shared it anywhere</li>
+                        </ul>
+
+                        <p style="margin-top: 20px; font-weight: 600;">Remember: Legitimate wallet software never asks you to input your seed phrase online. Your seed phrase should only be used to restore your wallet in the official app on your own device.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="security-tips">
+                <h3>🛡️ Best Practices for Seed Phrase Security</h3>
+                <ul>
+                    <li>Write your seed phrase on paper and store it in a secure location</li>
+                    <li>Never take photos or screenshots of your seed phrase</li>
+                    <li>Never store it in cloud storage or password managers</li>
+                    <li>Only use your seed phrase in the official wallet app on your device</li>
+                    <li>If you suspect your seed phrase is compromised, immediately create a new wallet</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            <p>This is an educational tool designed to protect users from seed phrase phishing scams.</p>
+            <p style="margin-top: 10px;">© 2024 Seed Validator Educational Tool</p>
+        </footer>
+    </div>
+
+    <script>
+        const seedInput = document.getElementById('seed-input');
+        const warningBanner = document.getElementById('warning-banner');
+        const validateBtn = document.getElementById('validate-btn');
+        let hasBeenCleared = false;
+
+        // Detect when user starts typing
+        seedInput.addEventListener('input', function(e) {
+            if (!hasBeenCleared && e.target.value.length > 0) {
+                // Immediately clear the input
+                e.target.value = '';
+                hasBeenCleared = true;
+                
+                // Show warning banner
+                warningBanner.classList.add('show');
+                
+                // Scroll to warning
+                setTimeout(() => {
+                    warningBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        });
+
+        // Also detect paste events
+        seedInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            if (!hasBeenCleared) {
+                hasBeenCleared = true;
+                e.target.value = '';
+                warningBanner.classList.add('show');
+                setTimeout(() => {
+                    warningBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        });
+
+        // Prevent context menu (right-click) on the input
+        seedInput.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Validate button click (also triggers warning if input has content)
+        validateBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (seedInput.value.trim().length > 0 && !hasBeenCleared) {
+                seedInput.value = '';
+                hasBeenCleared = true;
+                warningBanner.classList.add('show');
+                setTimeout(() => {
+                    warningBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                warningBanner.classList.add('show');
+                setTimeout(() => {
+                    warningBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        });
+
+        // Optional: Reset if user clears the field manually
+        seedInput.addEventListener('focus', function() {
+            if (seedInput.value.length === 0 && hasBeenCleared) {
+                // Allow user to interact, but warning stays
+            }
+        });
+    </script>
+</body>
+</html>
+
